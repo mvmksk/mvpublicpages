@@ -1103,6 +1103,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   @media (prefers-reduced-motion:reduce){
     .scroll-cue,#submit,#cta,#cta-positions,#cta-online,#cta-final{animation:none}
   }
+/* ===== REVISION: 未選択時アラート ===== */
+  .check-alert{
+    display:none;
+    color:#e72400;
+    font-weight:800;
+    font-size:14px;
+    line-height:1.5;
+    text-align:center;
+    margin:14px 0 0;
+  }
+  .check-alert.show{ display:block; }
 </style>
 </head>
 <body>
@@ -1182,6 +1193,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       </div>
 
       <button class="submit" id="submit" type="button">診断結果を表示</button>
+    <p class="check-alert" id="check-alert" role="alert" aria-live="assertive">当てはまる項目をご選択ください</p>
     </section>
 
     <section class="result" id="result" hidden aria-live="polite">
@@ -1595,6 +1607,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       const input = li.querySelector('input');
       input.addEventListener('change', () => {
         li.classList.toggle('checked', input.checked);
+     // どれか選ばれたらアラートを消す
+        if (input.checked) {
+          const a = document.getElementById('check-alert');
+          if (a) a.classList.remove('show');
+        }
       });
     });
 
@@ -1612,6 +1629,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     const CTA_BASE_URL = ctaEl.getAttribute('href'); // フォームの基本URL（一度だけ保持）
 
     document.getElementById('submit').addEventListener('click', () => {
+      // ▼未選択チェック：1つも選ばれていなければ赤文字アラートを出して中断
+      const alertEl = document.getElementById('check-alert');
+      if (!inputs.some(c => c.checked)) {
+        if (alertEl) alertEl.classList.add('show');
+        return;
+      }
+      if (alertEl) alertEl.classList.remove('show');
       // 診断結果の見出しを必ず更新して表示する
       try {
         const total = inputs.reduce((s,c) => s + (c.checked ? Number(c.dataset.pt) : 0), 0);
